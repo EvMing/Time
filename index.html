@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>专属纪念日台历</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.2/lunar.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.2/lunar.min.js" defer></script>
   <style>
     body {
       font-family: "Arial", sans-serif;
@@ -39,12 +39,8 @@
       font-weight: bold;
       margin-top: 5px;
     }
-    #beijing-time .clock-time {
-      color: #007bff;
-    }
-    #edinburgh-time .clock-time {
-      color: #e91e63;
-    }
+    #beijing-time .clock-time { color: #007bff; }
+    #edinburgh-time .clock-time { color: #e91e63; }
     #calendar-section {
       display: flex;
       justify-content: center;
@@ -62,6 +58,7 @@
       box-shadow: 0 8px 25px rgba(0,0,0,0.08);
       display: flex;
       align-items: center;
+      justify-content: center;
     }
     #photo-carousel img {
       width: 100%;
@@ -78,10 +75,6 @@
       padding: 20px;
       border-radius: 16px;
       box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-      min-height: 250px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
     }
     table {
       width: 100%;
@@ -94,12 +87,7 @@
       border: 1px solid #e0e0e0;
       vertical-align: top;
     }
-    th {
-      background-color: #f8f9fa;
-      color: #333;
-      font-weight: 600;
-      font-family: 'Helvetica Neue', sans-serif;
-    }
+    th { background-color: #f8f9fa; color: #333; font-weight: 600; font-family: 'Helvetica Neue', sans-serif; }
     .beijing { background-color: #d7eaff; }
     .edinburgh { background-color: #ffe1eb; }
     .both { background: linear-gradient(to right, #d7eaff 50%, #ffe1eb 50%); }
@@ -110,24 +98,11 @@
       margin-top: 2px;
       font-family: "Arial", sans-serif;
     }
-    .festival {
-      color: #e74c3c;
-      font-weight: bold;
-    }
-    .custom {
-      color: #d81b60;
-      font-style: italic;
-    }
-    .custom::before {
-      content: "❤️ ";
-    }
-    .oneoff {
-      color: #3f51b5;
-      font-style: italic;
-    }
-    .oneoff::before {
-      content: "⭐ ";
-    }
+    .festival { color: #e74c3c; font-weight: bold; }
+    .custom { color: #d81b60; font-style: italic; }
+    .custom::before { content: "❤️ "; }
+    .oneoff { color: #3f51b5; font-style: italic; }
+    .oneoff::before { content: "⭐ "; }
     .nav-buttons {
       display: flex;
       justify-content: space-between;
@@ -160,35 +135,36 @@
     <div class="clock" id="beijing-time"></div>
     <div class="clock" id="edinburgh-time"></div>
   </div>
-
   <div id="calendar-section">
-    <div id="photo-carousel">
-      <img src="https://evming.github.io/Time/assets/photo1.jpg" class="active" />
-      <img src="https://evming.github.io/Time/assets/photo2.jpg" />
-      <img src="https://evming.github.io/Time/assets/photo3.jpg" />
-    </div>
+    <div id="photo-carousel"></div>
     <div id="calendar"></div>
   </div>
-
   <script>
-    const festivals = {
-      "10-01": "国庆节",
-      "02-14": "情人节"
-    };
-    const customDatesEveryYear = {
-      "06-20": "结婚纪念日",
-      "08-10": "生日"
-    };
-    const customDatesOneTime = {
-      "2025-09-15": "结婚1000天"
+    const festivals = { "10-01": "国庆节", "02-14": "情人节" };
+    const customDatesEveryYear = { "06-20": "结婚纪念日", "08-10": "生日" };
+    const customDatesOneTime = { "2025-09-15": "结婚1000天" };
+
+    const photoGroups = {
+      0: ["images/1.png", "img/january2.jpg"],
+      1: ["img/february1.jpg", "img/february2.jpg"],
+      2: ["img/march1.jpg"],
+      3: ["img/april1.jpg"],
+      4: ["img/may1.jpg"],
+      5: ["img/june1.jpg"],
+      6: ["img/july1.jpg"],
+      7: ["img/august1.jpg"],
+      8: ["img/september1.jpg"],
+      9: ["img/october1.jpg"],
+      10: ["img/november1.jpg"],
+      11: ["img/december1.jpg"]
     };
 
     let currentDate = new Date();
+    let photoInterval = null;
 
     function updateTime() {
       const nowBJ = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
       const nowED = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/London" }));
-
       document.getElementById("beijing-time").innerHTML = `北京<br><span class='clock-time'>${nowBJ.toLocaleTimeString()}</span><br>${nowBJ.toLocaleDateString()}`;
       document.getElementById("edinburgh-time").innerHTML = `爱丁堡<br><span class='clock-time'>${nowED.toLocaleTimeString()}</span><br>${nowED.toLocaleDateString()}`;
     }
@@ -201,95 +177,113 @@
     }
 
     function createCalendar(date) {
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const startDay = firstDay.getDay();
+        const year = date.getFullYear();
+        const month = date.getMonth();
+      
 
-      let html = `
+      //   
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDay = firstDay.getDay();
+
+        let html = `
         <div class="nav-buttons">
-          <button onclick="changeMonth(-1)">←</button>
-          <h3>${year}年 ${month + 1}月</h3>
-          <button onclick="changeMonth(1)">→</button>
+            <button onclick="changeMonth(-1)">←</button>
+            <h3>${year}年 ${month + 1}月</h3>
+            <button onclick="changeMonth(1)">→</button>
         </div>
         <table><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr><tr>`;
 
-      let day = 1;
-      for (let i = 0; i < 6; i++) {
+        let day = 1;
+        for (let i = 0; i < 6; i++) {
         for (let j = 0; j < 7; j++) {
-          if ((i === 0 && j < startDay) || day > lastDay.getDate()) {
+            if ((i === 0 && j < startDay) || day > lastDay.getDate()) {
             html += "<td></td>";
-          } else {
+            } else {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const mmdd = `${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             let cls = "", info = "", style = "";
             const today = new Date();
             if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
-              cls += " today";
+                cls += " today";
             }
 
             let showLunar = true;
             if (customDatesEveryYear[mmdd]) {
-              info += `<span class='custom'>${customDatesEveryYear[mmdd]}</span>`;
-              style += "color:#d81b60;";
-              showLunar = false;
+                info += `<span class='custom'>${customDatesEveryYear[mmdd]}</span>`;
+                style += "color:#d81b60;";
+                showLunar = false;
             }
             if (customDatesOneTime[dateStr]) {
-              info += `<span class='oneoff'>${customDatesOneTime[dateStr]}</span>`;
-              style += "color:#3f51b5;";
-              showLunar = false;
+                info += `<span class='oneoff'>${customDatesOneTime[dateStr]}</span>`;
+                style += "color:#3f51b5;";
+                showLunar = false;
             }
 
             const lunar = Lunar.fromDate(new Date(year, month, day));
             if (lunar.getJieQi()) {
-              info += `<span class='jieqi'>${lunar.getJieQi()}</span>`;
-              showLunar = false;
+                info += `<span class='jieqi'>${lunar.getJieQi()}</span>`;
+                showLunar = false;
             }
 
             if (festivals[mmdd]) {
-              info += `<span class='festival'>${festivals[mmdd]}</span>`;
-              showLunar = false;
+                info += `<span class='festival'>${festivals[mmdd]}</span>`;
+                showLunar = false;
             }
 
             if (showLunar) {
-              info += `<span class='lunar'>${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}</span>`;
+                info += `<span class='lunar'>${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}</span>`;
             }
 
             const bjDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
             const edDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/London" }));
             if (bjDate.getMonth() === month && bjDate.getDate() === day && edDate.getDate() === day) {
-              cls += " both";
+                cls += " both";
             } else if (bjDate.getMonth() === month && bjDate.getDate() === day) {
-              cls += " beijing";
+                cls += " beijing";
             } else if (edDate.getMonth() === month && edDate.getDate() === day) {
-              cls += " edinburgh";
+                cls += " edinburgh";
             }
 
             html += `<td class="${cls}"><span style="${style}">${day}</span>${info}</td>`;
             day++;
-          }
+            }
         }
         html += "</tr>";
         if (day > lastDay.getDate()) break;
         else html += "<tr>";
-      }
-      html += "</table>";
-      document.getElementById("calendar").innerHTML = html;
+        }
+        html += "</table>";
+        document.getElementById("calendar").innerHTML = html;
+        updateCarousel(month);
     }
 
-    function rotatePhotos() {
-      const imgs = document.querySelectorAll('#photo-carousel img');
+    function updateCarousel(monthIndex) {
+      const container = document.getElementById("photo-carousel");
+      container.innerHTML = "";
+      if (photoInterval) clearInterval(photoInterval);
+      const photos = photoGroups[monthIndex] || [];
+      photos.forEach((src, i) => {
+        const img = document.createElement("img");
+        img.src = src;
+        if (i === 0) img.classList.add("active");
+        container.appendChild(img);
+      });
+      const imgs = container.querySelectorAll("img");
       let index = 0;
-      setInterval(() => {
-        imgs[index].classList.remove('active');
-        index = (index + 1) % imgs.length;
-        imgs[index].classList.add('active');
-      }, 30000);
+      if (imgs.length > 1) {
+        photoInterval = setInterval(() => {
+          imgs[index].classList.remove("active");
+          index = (index + 1) % imgs.length;
+          imgs[index].classList.add("active");
+        }, 30000);
+      }
     }
 
-    createCalendar(currentDate);
-    rotatePhotos();
+    window.addEventListener("DOMContentLoaded", () => {
+      createCalendar(currentDate);
+    });
   </script>
 </body>
 </html>
+
