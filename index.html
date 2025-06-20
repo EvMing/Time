@@ -2,9 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>全球时间日历 - 手机/平板可用</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球时间日历 - 正确时区版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏰</text></svg>">
     <style>
         :root {
             --primary: #4a6cf7;
@@ -21,18 +22,21 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
         
         body {
             background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
             min-height: 100vh;
+            min-height: -webkit-fill-available;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
             color: var(--text-dark);
             line-height: 1.6;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
         }
         
         .container {
@@ -243,11 +247,44 @@
             opacity: 0.3;
         }
         
+        .instructions {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #555;
+            grid-column: 1 / -1;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .time-info {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #777;
+            font-style: italic;
+        }
+        
         footer {
             text-align: center;
             margin-top: 20px;
             color: rgba(255, 255, 255, 0.85);
-            font-size: 15px;
+            font-size: 14px;
             grid-column: 1 / -1;
             padding: 0 15px;
         }
@@ -301,6 +338,10 @@
             .month-year {
                 font-size: 18px;
             }
+            
+            .time-info {
+                font-size: 12px;
+            }
         }
         
         /* 手机横屏模式优化 */
@@ -321,6 +362,10 @@
             .time-display {
                 font-size: 32px;
                 margin: 8px 0;
+            }
+            
+            .instructions {
+                display: none;
             }
         }
         
@@ -365,6 +410,15 @@
             
             .time-zone {
                 background: rgba(50, 60, 90, 0.6);
+            }
+            
+            .instructions {
+                background: rgba(40, 40, 50, 0.9);
+                color: #ccc;
+            }
+            
+            .time-info {
+                color: #aaa;
             }
         }
     </style>
@@ -415,6 +469,7 @@
                     </div>
                 </div>
             </div>
+            <div class="time-info">精确时区: Asia/Shanghai</div>
         </div>
         
         <!-- 爱丁堡时间卡片 -->
@@ -426,7 +481,7 @@
             <div class="city-name">英国，爱丁堡</div>
             <div class="time-display" id="edinburgh-time">00:00:00</div>
             <div class="date-display" id="edinburgh-date">2023年10月1日 星期日</div>
-            <div class="time-zone">UTC+1 (夏令时)</div>
+            <div class="time-zone" id="edinburgh-timezone">UTC+1 (夏令时)</div>
             <div class="flags">
                 <div class="flag">
                     <div style="background: #012169; height: 33.3%;"></div>
@@ -437,48 +492,108 @@
                     <div style="background: #C8102E; height: 33.3%;"></div>
                 </div>
             </div>
+            <div class="time-info">精确时区: Europe/London</div>
         </div>
         
         <div class="divider"></div>
         
+        <div class="instructions">
+            <h3><i class="fas fa-mobile-alt"></i> iPhone使用说明</h3>
+            <ul>
+                <li>1. 长按此页面 → 选择"添加到主屏幕"可创建应用图标</li>
+                <li>2. 在Safari中打开此页面后，点击分享图标 → "添加到主屏幕"</li>
+                <li>3. 下次直接从主屏幕图标访问，无需重复打开文件</li>
+                <li>4. 左右滑动日历区域可切换月份</li>
+            </ul>
+        </div>
+        
         <footer>
-            <p>© 2023 全球时间日历 | 手机/平板兼容版 | 设计制作：<a href="#" target="_blank">响应式网页开发</a></p>
+            <p>© 2023 全球时间日历 | 精确时区版 | 设计制作：<a href="#" target="_blank">时间专家</a></p>
         </footer>
     </div>
 
     <script>
-        // 时钟功能
-        function updateClocks() {
+        // 修复后的正确时间计算函数
+        function getFormattedTime(timeZone) {
             const now = new Date();
             
-            // 北京时间 (UTC+8)
-            const beijingTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
-            document.getElementById('beijing-time').textContent = formatTime(beijingTime);
-            document.getElementById('beijing-date').textContent = formatDate(beijingTime);
+            // 使用Intl API正确转换时区
+            const formatter = new Intl.DateTimeFormat('zh-CN', {
+                timeZone: timeZone,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
             
-            // 爱丁堡时间 (UTC+1 夏令时)
-            const edinburghTime = new Date(now.getTime() + (1 * 60 * 60 * 1000));
-            document.getElementById('edinburgh-time').textContent = formatTime(edinburghTime);
-            document.getElementById('edinburgh-date').textContent = formatDate(edinburghTime);
+            return formatter.format(now);
         }
         
-        function formatTime(date) {
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            const seconds = date.getSeconds().toString().padStart(2, '0');
-            return `${hours}:${minutes}:${seconds}`;
+        function getFormattedDate(timeZone) {
+            const now = new Date();
+            
+            // 获取日期和星期
+            const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
+                timeZone: timeZone,
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            
+            return dateFormatter.format(now);
         }
         
-        function formatDate(date) {
-            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const day = date.getDate();
-            const weekday = weekdays[date.getDay()];
-            return `${year}年${month}月${day}日 ${weekday}`;
+        function getTimezoneOffset(timeZone) {
+            const now = new Date();
+            const utcTime = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+            const tzTime = new Date(now.toLocaleString('en-US', { timeZone }));
+            const offset = (tzTime.getTime() - utcTime.getTime()) / (60 * 1000);
+            return offset;
         }
         
-        // 日历功能
+        function formatTimezone(offset) {
+            const hours = Math.floor(Math.abs(offset) / 60);
+            const minutes = Math.abs(offset) % 60;
+            const sign = offset >= 0 ? '+' : '-';
+            
+            return `UTC${sign}${hours}${minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : ''}`;
+        }
+        
+        function isDST(timeZone) {
+            try {
+                const now = new Date();
+                const jan = new Date(now.getFullYear(), 0, 1);
+                const jul = new Date(now.getFullYear(), 6, 1);
+                
+                const janOffset = getTimezoneOffset(timeZone, jan);
+                const julOffset = getTimezoneOffset(timeZone, jul);
+                
+                return Math.max(janOffset, julOffset) !== janOffset;
+            } catch(e) {
+                console.error("Error checking DST:", e);
+                return false;
+            }
+        }
+        
+        // 更新时钟函数
+        function updateClocks() {
+            // 北京时间 (Asia/Shanghai)
+            document.getElementById('beijing-time').textContent = getFormattedTime('Asia/Shanghai');
+            document.getElementById('beijing-date').textContent = getFormattedDate('Asia/Shanghai');
+            
+            // 爱丁堡时间 (Europe/London)
+            document.getElementById('edinburgh-time').textContent = getFormattedTime('Europe/London');
+            document.getElementById('edinburgh-date').textContent = getFormattedDate('Europe/London');
+            
+            // 更新爱丁堡时区显示（考虑夏令时）
+            const now = new Date();
+            const dstSuffix = isDST('Europe/London') ? ' (夏令时)' : ' (冬令时)';
+            const edinburghOffset = getTimezoneOffset('Europe/London');
+            document.getElementById('edinburgh-timezone').textContent = formatTimezone(edinburghOffset) + dstSuffix;
+        }
+        
+        // 日历功能（保持不变）
         let currentDate = new Date();
         
         function renderCalendar() {
@@ -569,11 +684,22 @@
         updateClocks();
         setInterval(updateClocks, 1000);
         
-        // 设备检测
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        if (isMobile) {
-            document.body.classList.add('mobile');
-        }
+        // 添加到主屏幕提示
+        window.addEventListener('load', () => {
+            // 检测是否是从主屏幕启动
+            if (window.navigator.standalone) {
+                document.querySelector('.instructions').style.display = 'none';
+            }
+            
+            // 检测是否是iOS设备
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (!isIOS) {
+                document.querySelector('.instructions').style.display = 'none';
+            }
+            
+            // 首次立即更新时间
+            updateClocks();
+        });
     </script>
 </body>
 </html>
