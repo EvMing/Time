@@ -1,886 +1,295 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全球时间日历 - 优化版</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #4a6cf7;
-            --primary-light: #6a8cff;
-            --pink: #ff6b9d;
-            --pink-light: #ff9ac0;
-            --secondary: #6a11cb;
-            --text-dark: #2c3e50;
-            --text-light: #6c757d;
-            --card-bg: rgba(255, 255, 255, 0.97);
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-            --transition: all 0.3s ease;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-            color: var(--text-dark);
-            line-height: 1.6;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            color: white;
-            width: 100%;
-            max-width: 900px;
-        }
-        
-        .header h1 {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .header p {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-        
-        .time-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            width: 100%;
-            max-width: 900px;
-            margin-bottom: 20px;
-        }
-        
-        .container {
-            max-width: 900px;
-            width: 100%;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            padding: 10px;
-        }
-        
-        .card {
-            background: var(--card-bg);
-            border-radius: 18px;
-            box-shadow: var(--shadow);
-            padding: 20px;
-            transition: var(--transition);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-        
-        .calendar-card {
-            padding: 20px 15px;
-        }
-        
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid rgba(240, 240, 240, 0.8);
-        }
-        
-        .card-header i {
-            font-size: 22px;
-            margin-right: 12px;
-            color: var(--primary);
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(74, 108, 247, 0.1);
-            border-radius: 10px;
-        }
-        
-        .card-header h2 {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-        
-        /* 日历样式 */
-        .calendar {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .month-year {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-dark);
-            text-align: center;
-            flex: 1;
-        }
-        
-        .nav-btn {
-            background: rgba(240, 245, 255, 0.8);
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            color: var(--primary);
-            font-size: 16px;
-            transition: var(--transition);
-            touch-action: manipulation;
-        }
-        
-        .nav-btn:active {
-            transform: scale(0.95);
-            background: var(--primary);
-            color: white;
-        }
-        
-        .weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            font-weight: 600;
-            color: var(--text-light);
-            margin-bottom: 10px;
-            font-size: 13px;
-        }
-        
-        .days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-        }
-        
-        .day {
-            min-height: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 14px;
-            user-select: none;
-            padding: 6px 4px;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-        
-        .day-number {
-            font-size: 14px;
-            font-weight: 600;
-            align-self: flex-start;
-            z-index: 2;
-        }
-        
-        .day-lunar {
-            font-size: 10px;
-            color: #777;
-            margin-top: 2px;
-            z-index: 2;
-        }
-        
-        .day-events {
-            margin-top: 2px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2px;
-            z-index: 2;
-        }
-        
-        .event-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: var(--primary);
-        }
-        
-        .day-memorial {
-            position: absolute;
-            bottom: 3px;
-            right: 3px;
-            color: #e74c3c;
-            font-size: 12px;
-            z-index: 2;
-        }
-        
-        .day:active {
-            background: rgba(232, 240, 254, 0.7);
-        }
-        
-        .day.today {
-            border: 2px solid var(--primary);
-            background: rgba(74, 108, 247, 0.1);
-        }
-        
-        .day.other-month {
-            background: rgba(245, 245, 245, 0.7);
-            opacity: 0.7;
-        }
-        
-        .day.beijing-date {
-            background: rgba(74, 108, 247, 0.1);
-            border-left: 3px solid var(--primary);
-        }
-        
-        .day.edinburgh-date {
-            background: rgba(255, 107, 157, 0.1);
-            border-right: 3px solid var(--pink);
-        }
-        
-        .day.both-dates {
-            background: linear-gradient(135deg, rgba(74, 108, 247, 0.15) 0%, rgba(255, 107, 157, 0.15) 100%);
-            border-left: 3px solid var(--primary);
-            border-right: 3px solid var(--pink);
-        }
-        
-        .day.event-day {
-            background: rgba(255, 215, 0, 0.1);
-        }
-        
-        /* 时钟样式 */
-        .time-card {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 15px;
-        }
-        
-        .city-name {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: var(--text-dark);
-        }
-        
-        .time-display {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--primary);
-            margin: 6px 0;
-            letter-spacing: 1px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .date-display {
-            font-size: 15px;
-            color: var(--text-light);
-            margin-bottom: 10px;
-        }
-        
-        .time-zone {
-            background: rgba(232, 240, 254, 0.8);
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-            font-size: 13px;
-            color: var(--primary);
-            font-weight: 600;
-            margin: 0 auto;
-        }
-        
-        .divider {
-            height: 1px;
-            background: linear-gradient(to right, transparent, var(--primary), transparent);
-            margin: 15px 0;
-            opacity: 0.3;
-        }
-        
-        .instructions {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 10px;
-            font-size: 13px;
-            color: #555;
-            grid-column: 1 / -1;
-        }
-        
-        .instructions h3 {
-            margin-bottom: 8px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 15px;
-        }
-        
-        .instructions ul {
-            padding-left: 18px;
-        }
-        
-        .instructions li {
-            margin-bottom: 6px;
-            font-size: 13px;
-        }
-        
-        .time-info {
-            margin-top: 8px;
-            font-size: 12px;
-            color: #777;
-            font-style: italic;
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 15px;
-            color: rgba(255, 255, 255, 0.85);
-            font-size: 13px;
-            grid-column: 1 / -1;
-            padding: 0 15px;
-        }
-        
-        footer a {
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.5);
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .time-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .time-display {
-                font-size: 28px;
-            }
-            
-            .card {
-                padding: 18px;
-                border-radius: 16px;
-            }
-            
-            .time-zone {
-                font-size: 12px;
-            }
-            
-            .day {
-                min-height: 55px;
-                padding: 5px 3px;
-            }
-            
-            .header h1 {
-                font-size: 1.6rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .time-display {
-                font-size: 26px;
-            }
-            
-            .card-header h2 {
-                font-size: 18px;
-            }
-            
-            .city-name {
-                font-size: 16px;
-            }
-            
-            .date-display {
-                font-size: 14px;
-            }
-            
-            .month-year {
-                font-size: 16px;
-            }
-            
-            .day-number {
-                font-size: 13px;
-            }
-            
-            .day-lunar {
-                font-size: 9px;
-            }
-        }
-        
-        /* 深色模式支持 */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --text-dark: #f0f0f0;
-                --text-light: #a0a0a0;
-                --card-bg: rgba(30, 30, 40, 0.95);
-            }
-            
-            body {
-                background: linear-gradient(135deg, #2a0a8f 0%, #1a3ab9 100%);
-            }
-            
-            .card {
-                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            }
-            
-            .nav-btn {
-                background: rgba(50, 60, 90, 0.6);
-            }
-            
-            .day:active {
-                background: rgba(60, 70, 100, 0.5);
-            }
-            
-            .time-zone {
-                background: rgba(50, 60, 90, 0.6);
-            }
-            
-            .instructions {
-                background: rgba(40, 40, 50, 0.9);
-                color: #ccc;
-            }
-            
-            .time-info {
-                color: #aaa;
-            }
-            
-            .day.other-month {
-                background: rgba(50, 50, 60, 0.7);
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>专属纪念日台历</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.2/lunar.min.js"></script>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      background: linear-gradient(to bottom right, #f0f4ff, #ffffff);
+    }
+    h2 {
+      margin-top: 20px;
+      color: #2c3e50;
+    }
+    .time-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px auto;
+      flex-wrap: wrap;
+    }
+    .clock {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 15px 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      font-size: 14px;
+      min-width: 180px;
+      transition: all 0.3s;
+      border-top: 5px solid #4a90e2;
+    }
+    .clock-time {
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    #beijing-time .clock-time {
+      color: #007bff;
+    }
+    #edinburgh-time .clock-time {
+      color: #e91e63;
+    }
+    #calendar-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 20px auto;
+      max-width: 1000px;
+      gap: 20px;
+    }
+    #photo-carousel {
+      width: 250px;
+      height: 250px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+    }
+    #photo-carousel img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    #photo-carousel img.active {
+      display: block;
+    }
+    #calendar {
+      background: white;
+      max-width: 700px;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      width: 14.2%;
+      padding: 8px;
+      text-align: center;
+      border: 1px solid #e0e0e0;
+      vertical-align: top;
+    }
+    th {
+      background-color: #f8f9fa;
+      color: #333;
+      font-weight: 600;
+      font-family: 'Helvetica Neue', sans-serif;
+    }
+    .beijing { background-color: #d7eaff; }
+    .edinburgh { background-color: #ffe1eb; }
+    .both { background: linear-gradient(to right, #d7eaff 50%, #ffe1eb 50%); }
+    .today { font-weight: bold; border: 2px solid #333; background-color: #fefbd8; }
+    .festival, .custom, .lunar, .jieqi, .oneoff {
+      font-size: 10px;
+      display: block;
+      margin-top: 2px;
+      font-family: "Arial", sans-serif;
+    }
+    .festival {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    .custom {
+      color: #d81b60;
+      font-style: italic;
+    }
+    .custom::before {
+      content: "❤️ ";
+    }
+    .oneoff {
+      color: #3f51b5;
+      font-style: italic;
+    }
+    .oneoff::before {
+      content: "⭐ ";
+    }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .nav-buttons h3 {
+      margin: 0;
+      font-weight: 500;
+      color: #2c3e50;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    button {
+      padding: 6px 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4a90e2;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+    }
+    button:hover { background-color: #357abd; }
+    .custom-date { color: #d81b60; }
+    .oneoff-date { color: #3f51b5; }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1><i class="fas fa-globe-asia"></i> 全球时间日历</h1>
-        <p>北京与爱丁堡时间 | 农历与节日 | 纪念日标注</p>
-    </div>
-    
-    <div class="time-container">
-        <!-- 北京时间卡片 -->
-        <div class="card time-card">
-            <div class="card-header">
-                <i class="fas fa-clock"></i>
-                <h2>北京时间</h2>
-            </div>
-            <div class="city-name">中国，北京</div>
-            <div class="time-display" id="beijing-time">00:00:00</div>
-            <div class="date-display" id="beijing-date">2023年10月1日 星期日</div>
-            <div class="time-zone">UTC+8</div>
-            <div class="time-info">精确时区: Asia/Shanghai</div>
-        </div>
-        
-        <!-- 爱丁堡时间卡片 -->
-        <div class="card time-card">
-            <div class="card-header">
-                <i class="fas fa-clock"></i>
-                <h2>爱丁堡时间</h2>
-            </div>
-            <div class="city-name">英国，爱丁堡</div>
-            <div class="time-display" id="edinburgh-time">00:00:00</div>
-            <div class="date-display" id="edinburgh-date">2023年10月1日 星期日</div>
-            <div class="time-zone" id="edinburgh-timezone">UTC+1 (夏令时)</div>
-            <div class="time-info">精确时区: Europe/London</div>
-        </div>
-    </div>
-    
-    <div class="container">
-        <!-- 日历卡片 -->
-        <div class="card calendar-card">
-            <div class="card-header">
-                <i class="fas fa-calendar-alt"></i>
-                <h2>日历</h2>
-                <div style="margin-left: auto; display: flex; gap: 8px; align-items: center; font-size: 12px;">
-                    <div style="display: flex; align-items: center;">
-                        <div style="width: 10px; height: 10px; background: var(--primary); border-radius: 2px; margin-right: 4px;"></div>
-                        <span>北京日期</span>
-                    </div>
-                    <div style="display: flex; align-items: center;">
-                        <div style="width: 10px; height: 10px; background: var(--pink); border-radius: 2px; margin-right: 4px;"></div>
-                        <span>爱丁堡日期</span>
-                    </div>
-                </div>
-            </div>
-            <div class="calendar">
-                <div class="calendar-header">
-                    <button class="nav-btn" id="prev-month"><i class="fas fa-chevron-left"></i></button>
-                    <div class="month-year" id="current-month-year">2023年10月</div>
-                    <button class="nav-btn" id="next-month"><i class="fas fa-chevron-right"></i></button>
-                </div>
-                <div class="weekdays">
-                    <div>日</div>
-                    <div>一</div>
-                    <div>二</div>
-                    <div>三</div>
-                    <div>四</div>
-                    <div>五</div>
-                    <div>六</div>
-                </div>
-                <div class="days" id="calendar-days"></div>
-            </div>
-        </div>
-        
-        <div class="instructions">
-            <h3><i class="fas fa-info-circle"></i> 使用说明</h3>
-            <ul>
-                <li><i class="fas fa-circle" style="color: var(--primary);"></i> 蓝色边框标记北京日期</li>
-                <li><i class="fas fa-circle" style="color: var(--pink);"></i> 粉色边框标记爱丁堡日期</li>
-                <li><i class="fas fa-heart" style="color: #e74c3c;"></i> 爱心图标表示自定义纪念日</li>
-                <li>当前日期用蓝色边框高亮显示</li>
-            </ul>
-        </div>
-        
-        <footer>
-            <p>© 2023 全球时间日历 | 优化版 | 设计制作：<a href="#" target="_blank">日历专家</a></p>
-        </footer>
-    </div>
+  <h2>纪念日电子台历</h2>
+  <div class="time-container">
+    <div class="clock" id="beijing-time"></div>
+    <div class="clock" id="edinburgh-time"></div>
+  </div>
 
-    <script>
-        // 修复后的正确时间计算函数
-        function getFormattedTime(timeZone) {
-            const now = new Date();
-            
-            // 使用Intl API正确转换时区
-            const formatter = new Intl.DateTimeFormat('zh-CN', {
-                timeZone: timeZone,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
-            });
-            
-            return formatter.format(now);
-        }
-        
-        function getFormattedDate(timeZone) {
-            const now = new Date();
-            
-            // 获取日期和星期
-            const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
-                timeZone: timeZone,
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                weekday: 'long'
-            });
-            
-            return dateFormatter.format(now);
-        }
-        
-        function getTimezoneOffset(timeZone) {
-            const now = new Date();
-            const utcTime = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
-            const tzTime = new Date(now.toLocaleString('en-US', { timeZone }));
-            const offset = (tzTime.getTime() - utcTime.getTime()) / (60 * 1000);
-            return offset;
-        }
-        
-        function formatTimezone(offset) {
-            const hours = Math.floor(Math.abs(offset) / 60);
-            const minutes = Math.abs(offset) % 60;
-            const sign = offset >= 0 ? '+' : '-';
-            
-            return `UTC${sign}${hours}${minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : ''}`;
-        }
-        
-        function isDST(timeZone) {
-            try {
-                const now = new Date();
-                const jan = new Date(now.getFullYear(), 0, 1);
-                const jul = new Date(now.getFullYear(), 6, 1);
-                
-                const janOffset = getTimezoneOffset(timeZone, jan);
-                const julOffset = getTimezoneOffset(timeZone, jul);
-                
-                return Math.max(janOffset, julOffset) !== janOffset;
-            } catch(e) {
-                console.error("Error checking DST:", e);
-                return false;
-            }
-        }
-        
-        // 更新时钟函数
-        function updateClocks() {
-            // 北京时间 (Asia/Shanghai)
-            document.getElementById('beijing-time').textContent = getFormattedTime('Asia/Shanghai');
-            document.getElementById('beijing-date').textContent = getFormattedDate('Asia/Shanghai');
-            
-            // 爱丁堡时间 (Europe/London)
-            document.getElementById('edinburgh-time').textContent = getFormattedTime('Europe/London');
-            document.getElementById('edinburgh-date').textContent = getFormattedDate('Europe/London');
-            
-            // 更新爱丁堡时区显示（考虑夏令时）
-            const now = new Date();
-            const dstSuffix = isDST('Europe/London') ? ' (夏令时)' : ' (冬令时)';
-            const edinburghOffset = getTimezoneOffset('Europe/London');
-            document.getElementById('edinburgh-timezone').textContent = formatTimezone(edinburghOffset) + dstSuffix;
-        }
-        
-        // 农历数据
-        const lunarInfo = [
-            0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
-            0x04ae0, 0x0a5b6, 0x0a4d0, 0x0d250, 0x1d255, 0x0b540, 0x0d6a0, 0x0ada2, 0x095b0, 0x14977
-        ];
-        
-        const lunarMonths = ["正", "二", "三", "四", "五", "六", "七", "八", "九", "十", "冬", "腊"];
-        const lunarDays = ["初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十",
-                          "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十",
-                          "廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十"];
-        
-        // 节日数据
-        const festivals = {
-            "1-1": "元旦",
-            "2-14": "情人节",
-            "3-8": "妇女节",
-            "5-1": "劳动节",
-            "6-1": "儿童节",
-            "9-10": "教师节",
-            "10-1": "国庆节",
-            "12-25": "圣诞节"
-        };
-        
-        const lunarFestivals = {
-            "1-1": "春节",
-            "1-15": "元宵节",
-            "5-5": "端午节",
-            "7-7": "七夕",
-            "8-15": "中秋节",
-            "9-9": "重阳节",
-            "12-8": "腊八节"
-        };
-        
-        // 自定义纪念日（在此处添加您的纪念日）
-        const memorialDays = [
-            { date: "2025-02-14", name: "情人节" },
-            { date: "2023-08-22", name: "结婚纪念日" },
-            { date: "2023-12-25", name: "圣诞节" },
-            { date: "2023-11-11", name: "光棍节" },
-            { date: "2023-09-10", name: "教师节" }
-        ];
-        
-        // 计算农历
-        function getLunarDate(date) {
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const day = date.getDate();
-            
-            // 简化的农历计算（实际应用中应使用更精确的算法）
-            // 这里使用一个简单的映射关系作为演示
-            const dayIndex = (year + month + day) % 30;
-            const monthIndex = (year + month) % 12;
-            
-            return {
-                month: lunarMonths[monthIndex],
-                day: lunarDays[dayIndex]
-            };
-        }
-        
-        // 获取节日信息
-        function getFestival(date) {
-            const month = date.getMonth() + 1;
-            const day = date.getDate();
-            const key = `${month}-${day}`;
-            
-            // 公历节日
-            if (festivals[key]) {
-                return festivals[key];
-            }
-            
-            // 农历节日（简化处理）
-            const lunar = getLunarDate(date);
-            const lunarKey = `${lunar.month}-${lunar.day}`;
-            
-            if (lunarFestivals[lunarKey]) {
-                return lunarFestivals[lunarKey];
-            }
-            
-            return null;
-        }
-        
-        // 检查是否是纪念日
-        function isMemorialDay(date) {
-            const dateStr = date.toISOString().split('T')[0];
-            return memorialDays.some(memorial => memorial.date === dateStr);
-        }
-        
-        // 检查是否是北京日期
-        function isBeijingDate(date) {
-            const beijingDate = new Date(date.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
-            return date.getDate() === beijingDate.getDate() && 
-                   date.getMonth() === beijingDate.getMonth() && 
-                   date.getFullYear() === beijingDate.getFullYear();
-        }
-        
-        // 检查是否是爱丁堡日期
-        function isEdinburghDate(date) {
-            const edinburghDate = new Date(date.toLocaleString('en-US', { timeZone: 'Europe/London' }));
-            return date.getDate() === edinburghDate.getDate() && 
-                   date.getMonth() === edinburghDate.getMonth() && 
-                   date.getFullYear() === edinburghDate.getFullYear();
-        }
-        
-        // 日历功能
-        let currentDate = new Date();
-        
-        function renderCalendar() {
-            const calendarDays = document.getElementById('calendar-days');
-            calendarDays.innerHTML = '';
-            
-            const monthYear = document.getElementById('current-month-year');
-            monthYear.textContent = `${currentDate.getFullYear()}年${currentDate.getMonth() + 1}月`;
-            
-            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-            
-            const startDay = firstDay.getDay();
-            const endDate = lastDay.getDate();
+  <div id="calendar-section">
+    <div id="photo-carousel">
+      <img src="https://evming.github.io/Time/assets/photo1.jpg" class="active" />
+      <img src="https://evming.github.io/Time/assets/photo2.jpg" />
+      <img src="https://evming.github.io/Time/assets/photo3.jpg" />
+    </div>
+    <div id="calendar"></div>
+  </div>
+
+  <script>
+    const festivals = {
+      "10-01": "国庆节",
+      "02-14": "情人节"
+    };
+    const customDatesEveryYear = {
+      "06-20": "结婚纪念日",
+      "08-10": "生日"
+    };
+    const customDatesOneTime = {
+      "2025-09-15": "结婚1000天"
+    };
+
+    let currentDate = new Date();
+
+    function updateTime() {
+      const nowBJ = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
+      const nowED = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/London" }));
+
+      document.getElementById("beijing-time").innerHTML = `北京<br><span class='clock-time'>${nowBJ.toLocaleTimeString()}</span><br>${nowBJ.toLocaleDateString()}`;
+      document.getElementById("edinburgh-time").innerHTML = `爱丁堡<br><span class='clock-time'>${nowED.toLocaleTimeString()}</span><br>${nowED.toLocaleDateString()}`;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    function changeMonth(offset) {
+      currentDate.setMonth(currentDate.getMonth() + offset);
+      createCalendar(currentDate);
+    }
+
+    function createCalendar(date) {
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDay = firstDay.getDay();
+
+      let html = `
+        <div class="nav-buttons">
+          <button onclick="changeMonth(-1)">←</button>
+          <h3>${year}年 ${month + 1}月</h3>
+          <button onclick="changeMonth(1)">→</button>
+        </div>
+        <table><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr><tr>`;
+
+      let day = 1;
+      for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 7; j++) {
+          if ((i === 0 && j < startDay) || day > lastDay.getDate()) {
+            html += "<td></td>";
+          } else {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const mmdd = `${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            let cls = "", info = "", style = "";
             const today = new Date();
-            
-            // 添加上个月的最后几天
-            const prevMonthLastDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
-            for (let i = startDay - 1; i >= 0; i--) {
-                const day = document.createElement('div');
-                day.className = 'day other-month';
-                
-                const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, prevMonthLastDay - i);
-                const lunar = getLunarDate(dayDate);
-                
-                day.innerHTML = `
-                    <div class="day-number">${prevMonthLastDay - i}</div>
-                    <div class="day-lunar">${lunar.month}${lunar.day}</div>
-                `;
-                
-                calendarDays.appendChild(day);
+            if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
+              cls += " today";
             }
-            
-            // 添加当前月的天数
-            for (let i = 1; i <= endDate; i++) {
-                const day = document.createElement('div');
-                
-                const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
-                const lunar = getLunarDate(dayDate);
-                const festival = getFestival(dayDate);
-                
-                // 设置日期类
-                let dayClass = 'day';
-                
-                // 标记今天
-                if (currentDate.getFullYear() === today.getFullYear() && 
-                    currentDate.getMonth() === today.getMonth() && 
-                    i === today.getDate()) {
-                    dayClass += ' today';
-                }
-                
-                // 标记北京日期
-                const isBeijing = isBeijingDate(dayDate);
-                if (isBeijing) {
-                    dayClass += ' beijing-date';
-                }
-                
-                // 标记爱丁堡日期
-                const isEdinburgh = isEdinburghDate(dayDate);
-                if (isEdinburgh) {
-                    dayClass += ' edinburgh-date';
-                }
-                
-                // 如果既是北京日期又是爱丁堡日期
-                if (isBeijing && isEdinburgh) {
-                    dayClass += ' both-dates';
-                }
-                
-                // 标记纪念日
-                if (isMemorialDay(dayDate)) {
-                    dayClass += ' memorial-day';
-                }
-                
-                day.className = dayClass;
-                
-                // 添加日期内容
-                let dayContent = `
-                    <div class="day-number">${i}</div>
-                    <div class="day-lunar">${lunar.month}${lunar.day}</div>
-                `;
-                
-                // 添加节日标记
-                if (festival) {
-                    dayContent += `<div class="day-events"><div class="event-dot"></div> ${festival}</div>`;
-                }
-                
-                // 添加纪念日图标
-                if (isMemorialDay(dayDate)) {
-                    dayContent += '<div class="day-memorial"><i class="fas fa-heart"></i></div>';
-                }
-                
-                day.innerHTML = dayContent;
-                
-                // 添加点击事件
-                day.addEventListener('click', () => {
-                    alert(`日期: ${dayDate.toLocaleDateString('zh-CN')}\n农历: ${lunar.month}${lunar.day}\n${festival ? '节日: ' + festival : ''}`);
-                });
-                
-                calendarDays.appendChild(day);
+
+            let showLunar = true;
+            if (customDatesEveryYear[mmdd]) {
+              info += `<span class='custom'>${customDatesEveryYear[mmdd]}</span>`;
+              style += "color:#d81b60;";
+              showLunar = false;
             }
-            
-            // 添加下个月的前几天
-            const totalCells = 42; // 6行x7天
-            const remaining = totalCells - (startDay + endDate);
-            for (let i = 1; i <= remaining; i++) {
-                const day = document.createElement('div');
-                day.className = 'day other-month';
-                
-                const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, i);
-                const lunar = getLunarDate(dayDate);
-                
-                day.innerHTML = `
-                    <div class="day-number">${i}</div>
-                    <div class="day-lunar">${lunar.month}${lunar.day}</div>
-                `;
-                
-                calendarDays.appendChild(day);
+            if (customDatesOneTime[dateStr]) {
+              info += `<span class='oneoff'>${customDatesOneTime[dateStr]}</span>`;
+              style += "color:#3f51b5;";
+              showLunar = false;
             }
+
+            const lunar = Lunar.fromDate(new Date(year, month, day));
+            if (lunar.getJieQi()) {
+              info += `<span class='jieqi'>${lunar.getJieQi()}</span>`;
+              showLunar = false;
+            }
+
+            if (festivals[mmdd]) {
+              info += `<span class='festival'>${festivals[mmdd]}</span>`;
+              showLunar = false;
+            }
+
+            if (showLunar) {
+              info += `<span class='lunar'>${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}</span>`;
+            }
+
+            const bjDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
+            const edDate = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/London" }));
+            if (bjDate.getMonth() === month && bjDate.getDate() === day && edDate.getDate() === day) {
+              cls += " both";
+            } else if (bjDate.getMonth() === month && bjDate.getDate() === day) {
+              cls += " beijing";
+            } else if (edDate.getMonth() === month && edDate.getDate() === day) {
+              cls += " edinburgh";
+            }
+
+            html += `<td class="${cls}"><span style="${style}">${day}</span>${info}</td>`;
+            day++;
+          }
         }
-        
-        // 事件监听器
-        document.getElementById('prev-month').addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            renderCalendar();
-        });
-        
-        document.getElementById('next-month').addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            renderCalendar();
-        });
-        
-        // 初始化
-        renderCalendar();
-        updateClocks();
-        setInterval(updateClocks, 1000);
-        
-        // 首次立即更新时间
-        updateClocks();
-    </script>
+        html += "</tr>";
+        if (day > lastDay.getDate()) break;
+        else html += "<tr>";
+      }
+      html += "</table>";
+      document.getElementById("calendar").innerHTML = html;
+    }
+
+    function rotatePhotos() {
+      const imgs = document.querySelectorAll('#photo-carousel img');
+      let index = 0;
+      setInterval(() => {
+        imgs[index].classList.remove('active');
+        index = (index + 1) % imgs.length;
+        imgs[index].classList.add('active');
+      }, 30000);
+    }
+
+    createCalendar(currentDate);
+    rotatePhotos();
+  </script>
 </body>
 </html>
