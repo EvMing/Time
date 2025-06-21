@@ -50,15 +50,16 @@
       max-width: 1000px;
       gap: 20px;
     }
-    #photo-carousel {
-      width: 250px;
-      height: 250px;
+    /* #photo-carousel {
+      width: 400px;
+      height: 300px;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 8px 25px rgba(0,0,0,0.08);
       display: flex;
       align-items: center;
       justify-content: center;
+      
     }
     #photo-carousel img {
       width: 100%;
@@ -68,7 +69,32 @@
     }
     #photo-carousel img.active {
       display: block;
+    } */
+    #photo-carousel {
+    width: 300px;
+    aspect-ratio: 1/1;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
     }
+
+    #photo-carousel img {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* ← 让图片完整显示 */
+      display: none;
+    }
+
+    #photo-carousel img.active {
+      display: block;
+    }
+
     #calendar {
       background: white;
       max-width: 700px;
@@ -90,8 +116,8 @@
     th { background-color: #f8f9fa; color: #333; font-weight: 600; font-family: 'Helvetica Neue', sans-serif; }
     .beijing { background-color: #d7eaff; }
     .edinburgh { background-color: #ffe1eb; }
-    .both { background: linear-gradient(to right, #d7eaff 50%, #ffe1eb 50%); }
-    .today { font-weight: bold; border: 2px solid #333; background-color: #fefbd8; }
+    .both { background: linear-gradient(to right, #ffe1eb 50%, #d7eaff 50%); }
+    .today { font-weight: bold; background-color: #ffe1eb; }
     .festival, .custom, .lunar, .jieqi, .oneoff {
       font-size: 10px;
       display: block;
@@ -202,7 +228,8 @@
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const mmdd = `${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             let cls = "", info = "", style = "";
-            const today = new Date();
+            // const today = new Date();
+            const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/London" }));
             if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
                 cls += " today";
             }
@@ -281,6 +308,25 @@
 
     window.addEventListener("DOMContentLoaded", () => {
       createCalendar(currentDate);
+      let refreshedBJ = false;
+      let refreshedED = false;
+      setInterval(() => {
+        const nowBJ = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
+        const nowED = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/London" }));
+
+        if (nowBJ.getHours() === 0 && nowBJ.getMinutes() === 0 && !refreshedBJ) {
+          refreshedBJ = true;
+          location.reload();
+        }
+        if (nowED.getHours() === 0 && nowED.getMinutes() === 0 && !refreshedED) {
+          refreshedED = true;
+          location.reload();
+        }
+
+        // 重置标志以便第二天可再次刷新
+        if (nowBJ.getHours() === 1 && refreshedBJ) refreshedBJ = false;
+        if (nowED.getHours() === 1 && refreshedED) refreshedED = false;
+      }, 1000);
     });
   </script>
 </body>
