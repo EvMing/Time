@@ -314,11 +314,11 @@
         const nowBJ = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
         const nowED = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/London" }));
 
-        if (nowBJ.getHours() === 0 && nowBJ.getMinutes() === 0 && !refreshedBJ) {
+        if (nowBJ.getHours() === 0 && nowBJ.getMinutes() === 0 && nowBJ.getSeconds() < 2 && !refreshedBJ) {
           refreshedBJ = true;
           location.reload();
         }
-        if (nowED.getHours() === 0 && nowED.getMinutes() === 0 && !refreshedED) {
+        if (nowED.getHours() === 0 && nowED.getMinutes() === 0 && nowED.getSeconds() < 2 && !refreshedED) {
           refreshedED = true;
           location.reload();
         }
